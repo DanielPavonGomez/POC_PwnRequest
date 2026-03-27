@@ -1,0 +1,22 @@
+name: Vulnerable CI
+on:
+  pull_request_target: # El trigger peligroso
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          # AQUÍ ESTÁ EL ERROR: Traes código del atacante a un entorno con privilegios
+          ref: ${{ github.event.pull_request.head.sha }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Run Build
+        env:
+          # Expones el secreto al entorno del paso
+          SECRET_KEY: ${{ secrets.MY_SUPER_SECRET }}
+        run: |
+          # Si el atacante modifica el archivo 'build.sh', puede leer la variable SECRET_KEY
+          bash build.sh
